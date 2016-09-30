@@ -10,4 +10,8 @@ To use:
 
 Your map must be located in the (game root)/maps folder. This program only runs on windows (as it uses bspzip.exe)
 
-If you experience any issues, or would like features to be added, please start an issue!
+**New feature: File whitelists and blacklists:**
+* To force the program to pack specific files, make a `mapname.pack.txt` file in your maps folder with one filename on each line. Filenames should be relative to the game root.
+* To force the program not to pack specific files and their dependencies, make a `mapname.nopack.txt` file in the maps folder.
+
+If you experience any problems, or would like features to be added, please start an issue!
