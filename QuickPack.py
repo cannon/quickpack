@@ -10,7 +10,7 @@ import itertools
 vtf_keys = set(['$basetexture','$detail','$blendmodulatetexture','$bumpmap','$normalmap','$parallaxmap','$heightmap','$selfillummask','$lightwarptexture','$envmap','$displacementmap'])
 
 def main():
-    print("\nQuickPack by Jackson Cannon - https://github.com/jackson-c/quickpack")
+    print("\nQuickPack v1.0 by Jackson Cannon - https://github.com/jackson-c/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
