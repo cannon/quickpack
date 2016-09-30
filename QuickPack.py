@@ -10,7 +10,7 @@ import itertools
 vtf_keys = set(['$basetexture','$detail','$blendmodulatetexture','$bumpmap','$normalmap','$parallaxmap','$heightmap','$selfillummask','$lightwarptexture','$envmap','$displacementmap'])
 
 def main():
-    print("\nQuickPack v1.0 by Jackson Cannon - https://github.com/jackson-c/quickpack")
+    print("\nQuickPack v1.1 by Jackson Cannon - https://github.com/jackson-c/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
@@ -22,6 +22,25 @@ def main():
     
     dependencies = {}
 
+    textfile_name = sys.argv[1].lower().replace(".bsp",".pack.txt")
+    if os.path.isfile(textfile_name):
+        print("\nAdding files from "+(sanitize_filename(textfile_name).split("/")[-1])+"...")
+        textfile = open(textfile_name,'r')
+        textfilecontent = textfile.readlines()
+        textfile.close()
+        for i in textfilecontent:
+            dependencies[sanitize_filename(i)] = False
+
+    dontpack = set()
+    textfile_name = sys.argv[1].lower().replace(".bsp",".nopack.txt")
+    if os.path.isfile(textfile_name):
+        print("\nRemoving files from "+(sanitize_filename(textfile_name).split("/")[-1])+"...")
+        textfile = open(textfile_name,'r')
+        textfilecontent = textfile.readlines()
+        textfile.close()
+        for i in textfilecontent:
+            dontpack.add(sanitize_filename(i))
+
     bsp_file = open(sys.argv[1],'rb')
 
     print("\nReading BSP...")
@@ -29,6 +48,8 @@ def main():
     entitylump = read_lump(bsp_file, 0)
     texturelump = read_lump(bsp_file, 43)
     staticproplump = read_lump(bsp_file, 35)
+
+    bsp_file.close()
 
     #Find (brush) Materials
     maptextures = texturelump.split(b'\0')[:-1]
@@ -50,14 +71,15 @@ def main():
     for i in mapsounds:
         dependencies["sound/"+i] = False
 
-    bsp_file.close()
-
     print("Finding dependencies...")
 
     moreitems = True
     while moreitems:
         moreitems = False
         for file, checked in list(dependencies.items()):
+            if file in dontpack:
+                del dependencies[file]
+                continue
             if checked == False:
                 newitems,deletethis = check_file(file)
                 dependencies[file] = True
@@ -102,6 +124,9 @@ def main():
 
     os.system("bspzip.exe -addlist "+bspfilenamecmd+" quickpack.txt "+bspfilenamecmd+" > nul 2>&1")
 
+    if os.path.isfile("quickpack.txt"):
+            os.remove("quickpack.txt")
+
     print("Done!")
 
 def read_lump(bsp_file, id):
@@ -122,7 +147,7 @@ def readcstr(f):
     return ''.join(itertools.takewhile('\0'.__ne__, toeof))
 
 def sanitize_filename(file):
-    return file.lower().replace("\\","/")
+    return file.lower().replace("\\","/").strip()
 
 def check_file(file):
     filebase = file.split(".",1)[0]
