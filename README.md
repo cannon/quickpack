@@ -1,7 +1,7 @@
 # QuickPack
-Utility for quickly packing model, material, texture, and sound dependencies in Half-Life 2 BSP maps.
+Utility for quickly and conveniently packing model, material, texture, and sound dependencies in Half-Life 2 BSP maps.
 
-**Automatically packs materials used in custom models**, unlike Pakrat. It's also extremely fast and convenient to use.
+**Automatically packs materials used in custom models**, unlike Pakrat. Furthermore, it only packs used materials for models with multiple skins!
 
 To use:  
 * Install Python 3 from https://www.python.org/downloads/  
