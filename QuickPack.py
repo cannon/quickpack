@@ -22,7 +22,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.2 by Jackson Cannon - https://github.com/jackson-c/quickpack")
+    print("\nQuickPack v1.21 by Jackson Cannon - https://github.com/jackson-c/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
@@ -345,7 +345,7 @@ def read_entity_lump(bsp_file):
                     if k2=='skin':
                         skin=int(v2)
                 for k2,v2 in ent.items():
-                    if v2=='targetname':
+                    if k2=='targetname':
                         skin=-1
                 add_mdl_file(v,skin)
 
