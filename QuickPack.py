@@ -22,7 +22,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.22 by Jackson Cannon - https://github.com/jackson-c/quickpack")
+    print("\nQuickPack v1.23 by Jackson Cannon - https://github.com/jackson-c/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
@@ -223,8 +223,9 @@ def check_file(filename):
                         skin_to_textures[skin].add(skintable[x][skin])
 
                 for skin in model_skins[filename]:
-                    for i in skin_to_textures[skin]:
-                        used_materials.add(i)
+                    if skin in skin_to_textures:
+                        for i in skin_to_textures[skin]:
+                            used_materials.add(i)
 
             textureoffsets = []
             file.seek(texture_offset)
