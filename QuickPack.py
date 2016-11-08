@@ -5,6 +5,8 @@ import shlex
 import sys
 import functools
 import itertools
+import zipfile
+import shutil
 
 #vmt parameters that reference a vtf texture (all $...2 parameters work as well)
 vtf_keys = set(['$basetexture','$detail','$blendmodulatetexture','$bumpmap','$normalmap','$parallaxmap','$heightmap','$selfillummask','$lightwarptexture','$envmap','$displacementmap'])
@@ -22,7 +24,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.23 by Jackson Cannon - https://github.com/jackson-c/quickpack")
+    print("\nQuickPack v1.3 by Jackson Cannon - https://github.com/jackson-c/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
@@ -35,6 +37,8 @@ def main():
 
     gameroot = os.getcwd()
     mapfilepath = '/'.join(pathparts[-2:]).lower()
+    mapfilepath_cmd = cmd_path(gameroot+"/"+mapfilepath)
+
 
     textfile_name = mapfilepath.replace(".bsp",".pack.txt")
     if os.path.isfile(textfile_name):
@@ -54,15 +58,38 @@ def main():
         for i in textfilecontent:
             dontpack.add(sanitize_filename(i))
 
-    bsp_file = open(sys.argv[1],'rb')
 
     print("\nReading BSP...")
+  
+    delete_file("maps/quickpacktemp.zip")
+    delete_dir("maps/quickpacktemp")
+
+    os.chdir("../bin")
+    os.system("bspzip.exe -extract "+mapfilepath_cmd+" "+cmd_path(gameroot+"/maps/quickpacktemp.zip")+" > nul 2>&1")
+    os.chdir(gameroot)
+
+    #Unpack patch materials made by the compiler
+    unpack_files = set()
+    zf = zipfile.ZipFile("maps/quickpacktemp.zip")
+    for f in zf.infolist():
+        f = sanitize_filename(f.filename)
+        if f.startswith("materials/maps/"):
+            unpack_files.add(f)
+    zf.extractall("maps/quickpacktemp",unpack_files)
+    zf.close()
+    delete_file("maps/quickpacktemp.zip")
+    
+    for f in unpack_files:
+        dependencies[sanitize_filename("maps/quickpacktemp/"+f)]=False
+    
+    bsp_file = open(sys.argv[1],'rb')
 
     read_texture_lump(bsp_file)
     read_staticprop_lump(bsp_file)
     read_entity_lump(bsp_file) #this must come after read_staticprop_lump
 
     bsp_file.close()
+
 
     print("Finding dependencies...")
 
@@ -84,6 +111,11 @@ def main():
                 if deletethis:
                     del dependencies[file]
 
+    for file, checked in list(dependencies.items()):
+        if file.startswith("maps/quickpacktemp"):
+            del dependencies[file]
+    delete_dir("maps/quickpacktemp")
+
     filetypelist = {}
     for file, checked in dependencies.items():
         filetype = file.split(".",1)[-1]
@@ -101,8 +133,7 @@ def main():
 
     print("\nWriting to "+sys.argv[1]+"...")
 
-    if os.path.isfile("quickpack.txt"):
-        os.remove("quickpack.txt")
+    delete_file("quickpack.txt")
 
     outfile = open("quickpack.txt","w")
     for file, checked in dependencies.items():
@@ -111,14 +142,9 @@ def main():
 
     outfile.close()
 
-    bspfilenamecmd = sys.argv[1]
-    if ' ' in bspfilenamecmd:
-        bspfilenamecmd = '"'+bspfilenamecmd+'"'
+    os.system("bspzip.exe -addlist "+mapfilepath_cmd+" quickpack.txt "+mapfilepath_cmd+" > nul 2>&1")
 
-    os.system("bspzip.exe -addlist "+bspfilenamecmd+" quickpack.txt "+bspfilenamecmd+" > nul 2>&1")
-
-    if os.path.isfile("quickpack.txt"):
-            os.remove("quickpack.txt")
+    delete_file("quickpack.txt")
 
     print("Done!")
 
@@ -138,6 +164,19 @@ def regex_find(regex, data):
 def readcstr(f):
     toeof = iter(functools.partial(f.read, 1), '')
     return ''.join(itertools.takewhile('\0'.__ne__, toeof))
+
+def cmd_path(p):
+    if (' ' in p) and (not ('"' in p)):
+        p = '"'+p+'"'
+    return p.replace("/","\\")
+
+def delete_file(f):
+    if os.path.isfile(f):
+        os.remove(f)
+
+def delete_dir(f):
+    if os.path.isdir(f):
+        shutil.rmtree(f)
 
 def vmt_filename(file):
     return "materials/"+sanitize_filename(file)+".vmt"
@@ -162,8 +201,11 @@ def check_file(filename):
             file.close()
             for line in content:
                 parts = shlex.split(line.lower())
-                if len(parts)>=2 and (parts[0].replace("2","") in vtf_keys):
-                    depends.append("materials/"+parts[1]+".vtf")
+                if len(parts)>=2:
+                    if parts[0].replace("2","") in vtf_keys:
+                        depends.append("materials/"+parts[1]+".vtf")
+                    if parts[0]=="include":
+                        depends.append(parts[1])
                 
         elif filetype=="mdl":
             depends.append(filebase+".dx80.vtx")
@@ -255,6 +297,8 @@ def check_file(filename):
                 tdir = readcstr(file)
                 for tex in textures:
                     depends.append(vmt_filename(tdir+tex))
+
+            file.close()
             
     else:
         #It's not available, so don't try to pack it
