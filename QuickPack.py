@@ -24,7 +24,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.3 by Jackson Cannon - https://github.com/jackson-c/quickpack")
+    print("\nQuickPack v1.31 by Jackson Cannon - https://github.com/jackson-c/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
@@ -244,8 +244,8 @@ def check_file(filename):
                     skins_to_read = skins_to_read-1
 
                 #Thanks to ZeqMacaw for helping figure this part out (filtering skin table columns)
-                last_different_column = -1
-                last_newindex_column = -1
+                last_different_column = 0
+                last_newindex_column = 0
                 unseen_indexes = set([x for x in range(skinreference_count)])
                 for x in range(skinreference_count):
                     for y in range(1,skinrfamily_count):
