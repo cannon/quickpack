@@ -4,7 +4,7 @@ Utility for quickly and conveniently packing model, material, texture, and sound
 **Automatically packs materials used in custom models**, unlike Pakrat. Furthermore, it only packs used materials for models with multiple skins!
 
 To use:  
-* Install Python 3 from https://www.python.org/downloads/  
+* Install Python **2.7** from https://www.python.org/downloads/  
 * Run QuickPack.py from a command prompt, with the full path to your map as the only argument. Example:  
 `QuickPack.py "C:\Program Files (x86)\Steam\steamapps\common\Half-Life 2\hl2\maps\mymap.bsp"`
 
