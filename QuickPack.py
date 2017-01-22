@@ -24,7 +24,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.31 by Jackson Cannon - https://github.com/jackson-c/quickpack")
+    print("\nQuickPack v1.32 by Jackson Cannon - https://github.com/jackson-c/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
@@ -194,7 +194,7 @@ def check_file(filename):
     if os.path.isfile(filename):
         size = os.path.getsize(filename)
         if size >= 1000000:
-            print("    Large file: "+filename+" ("+str(round(size/1000000,1))+" MB)")
+            print("    Large file: "+filename+" ("+str(round(size/1000000.0,1))+" MB)")
         if filetype=="vmt":
             file = open(filename,'r')
             content = file.readlines()
