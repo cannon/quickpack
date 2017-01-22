@@ -9,7 +9,7 @@ import zipfile
 import shutil
 
 #vmt parameters that reference a vtf texture (all $...2 parameters work as well)
-vtf_keys = set(['$basetexture','$detail','$blendmodulatetexture','$bumpmap','$normalmap','$parallaxmap','$heightmap','$selfillummask','$lightwarptexture','$envmap','$displacementmap'])
+vtf_keys = set(['$basetexture','$detail','$blendmodulatetexture','$bumpmap','$normalmap','$parallaxmap','$heightmap','$selfillummask','$lightwarptexture','$envmap','$displacementmap','$reflecttexture','$refracttexture','$refracttinttexture','$dudvmap'])
 
 #dictionary mdlfile->set(skins) so we don't pack unused skins
 model_skins = {}
