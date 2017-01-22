@@ -24,7 +24,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.32 by Jackson Cannon - https://github.com/jackson-c/quickpack")
+    print("\nQuickPack v1.33 by Jackson Cannon - https://github.com/jackson-c/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
