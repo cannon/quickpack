@@ -24,7 +24,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.33 by Jackson Cannon - https://github.com/jackson-c/quickpack")
+    print("\nQuickPack v1.34 by Jackson Cannon - https://github.com/jackson-c/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
@@ -182,7 +182,7 @@ def vmt_filename(file):
     return "materials/"+sanitize_filename(file)+".vmt"
 
 def sanitize_filename(file):
-    return file.lower().replace("\\","/").strip()
+    return file.lower().replace("\\","/").strip().strip("/")
 
 def check_file(filename):
     filebase = filename.split(".",1)[0]
@@ -248,7 +248,7 @@ def check_file(filename):
                 last_newindex_column = 0
                 unseen_indexes = set([x for x in range(skinreference_count)])
                 for x in range(skinreference_count):
-                    for y in range(1,skinrfamily_count):
+                    for y in range(skinrfamily_count):
                         if skintable[x][0]!=skintable[x][y]:
                             last_different_column=x
                         if skintable[x][y] in unseen_indexes:
