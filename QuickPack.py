@@ -10,6 +10,7 @@ import shutil
 
 #vmt parameters that reference a vtf texture (all $...2 parameters work as well)
 vtf_keys = set(['$basetexture','$detail','$blendmodulatetexture','$bumpmap','$normalmap','$parallaxmap','$heightmap','$selfillummask','$lightwarptexture','$envmap','$displacementmap','$reflecttexture','$refracttexture','$refracttinttexture','$dudvmap'])
+vmt_keys = set(['$bottommaterial','$underwateroverlay'])
 
 #dictionary mdlfile->set(skins) so we don't pack unused skins
 model_skins = {}
@@ -24,21 +25,43 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.34 by Jackson Cannon - https://github.com/jackson-c/quickpack")
+    print("\nQuickPack v1.35 by Jackson Cannon - https://github.com/cannon/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
         sys.exit()
 
-    #hopefully works with relative or absolute paths
+    abspath = os.path.abspath(sys.argv[1])
+    if not os.path.isfile(abspath):
+        print("File does not exist: "+abspath)
+        sys.exit()
+
     pathparts = sys.argv[1].replace("/","\\").split("\\")
-    os.chdir('\\'.join(pathparts[0:-1]))
-    os.chdir("..")
+    
+    if not pathparts[-1].lower().endswith(".bsp"):
+        print("Not a BSP file: "+abspath)
+        sys.exit()
+
+    if not pathparts[-2].lower() == "maps":
+        print("Not in a valid game directory: "+abspath)
+        sys.exit()
+
+    os.chdir('\\'.join(pathparts[0:-2]))
 
     gameroot = os.getcwd()
     mapfilepath = '/'.join(pathparts[-2:]).lower()
     mapfilepath_cmd = cmd_path(gameroot+"/"+mapfilepath)
+    mapname = pathparts[-1].lower().replace(".bsp","")
 
+    #Add global dependencies to look for
+    dependencies["maps/"+mapname+".txt"] = False
+    dependencies["maps/"+mapname+".nav"] = False
+    dependencies["maps/"+mapname+".kv"] = False
+    dependencies["maps/cfg/"+mapname+".cfg"] = False
+    dependencies["resource/overviews/"+mapname+"_radar.dds"] = False
+    dependencies["resource/overviews/"+mapname+"_radar_spectate.dds"] = False
+    dependencies["resource/overviews/"+mapname+"_lower_radar.dds"] = False
+    dependencies["resource/overviews/"+mapname+"_higher_radar.dds"] = False
 
     textfile_name = mapfilepath.replace(".bsp",".pack.txt")
     if os.path.isfile(textfile_name):
@@ -59,7 +82,7 @@ def main():
             dontpack.add(sanitize_filename(i))
 
 
-    print("\nReading BSP...")
+    print("\nReading "+mapname+".bsp...")
   
     delete_file("maps/quickpacktemp.zip")
     delete_dir("maps/quickpacktemp")
@@ -178,6 +201,9 @@ def delete_dir(f):
     if os.path.isdir(f):
         shutil.rmtree(f)
 
+def vtf_filename(file):
+    return "materials/"+sanitize_filename(file)+".vtf"
+
 def vmt_filename(file):
     return "materials/"+sanitize_filename(file)+".vmt"
 
@@ -203,7 +229,9 @@ def check_file(filename):
                 parts = shlex.split(line.lower())
                 if len(parts)>=2:
                     if parts[0].replace("2","") in vtf_keys:
-                        depends.append("materials/"+parts[1]+".vtf")
+                        depends.append(vtf_filename(parts[1]))
+                    if parts[0] in vmt_keys:
+                        depends.append(vmt_filename(parts[1]))
                     if parts[0]=="include":
                         depends.append(parts[1])
                 
