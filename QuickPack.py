@@ -25,7 +25,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.35 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.36 by Jackson Cannon - https://github.com/cannon/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
@@ -58,6 +58,7 @@ def main():
     dependencies["maps/"+mapname+".nav"] = False
     dependencies["maps/"+mapname+".kv"] = False
     dependencies["maps/cfg/"+mapname+".cfg"] = False
+    dependencies["resource/overviews/"+mapname+".txt"] = False
     dependencies["resource/overviews/"+mapname+"_radar.dds"] = False
     dependencies["resource/overviews/"+mapname+"_radar_spectate.dds"] = False
     dependencies["resource/overviews/"+mapname+"_lower_radar.dds"] = False
