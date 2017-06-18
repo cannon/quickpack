@@ -25,7 +25,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.36 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.37 by Jackson Cannon - https://github.com/cannon/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
@@ -424,11 +424,8 @@ def read_entity_lump(bsp_file):
                 add_mdl_file(v,skin)
 
             #env_sprite uses "model" as the key for its material
-            if k=='texture' or k=='material' or k=='model':
+            if k=='texture' or k=='material' or k=='detailmaterial' or k=='model':
                 dependencies[vmt_filename(v)] = False
-
-            if k=='detailmaterial':
-                dependencies[sanitize_filename("materials/"+v+".vtf")] = False
 
             if k=='skyname':
                 dependencies[vmt_filename("skybox/"+v+"bk")] = False
