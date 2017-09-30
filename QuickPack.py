@@ -25,7 +25,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.38 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.4 by Jackson Cannon - https://github.com/cannon/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
@@ -206,7 +206,10 @@ def vtf_filename(file):
     return "materials/"+sanitize_filename(file)+".vtf"
 
 def vmt_filename(file):
-    return "materials/"+sanitize_filename(file)+".vmt"
+    file = "materials/"+sanitize_filename(file)
+    if not file.endswith(".vmt"):
+        file = file+".vmt"
+    return file
 
 def sanitize_filename(file):
     return file.lower().replace("\\","/").strip().strip("/")
@@ -224,17 +227,16 @@ def check_file(filename):
             print("    Large file: "+filename+" ("+str(round(size/1000000.0,1))+" MB)")
         if filetype=="vmt":
             file = open(filename,'r')
-            content = file.readlines()
+            content = shlex.split(file.read().lower())
+            while len(content) >= 2:
+                key = content.pop(0)
+                if key.replace("2","") in vtf_keys:
+                    depends.append(vtf_filename(content.pop(0)))
+                elif key in vmt_keys:
+                    depends.append(vmt_filename(content.pop(0)))
+                elif key=="include":
+                    depends.append(content.pop(0))
             file.close()
-            for line in content:
-                parts = shlex.split(line.lower())
-                if len(parts)>=2:
-                    if parts[0].replace("2","") in vtf_keys:
-                        depends.append(vtf_filename(parts[1]))
-                    if parts[0] in vmt_keys:
-                        depends.append(vmt_filename(parts[1]))
-                    if parts[0]=="include":
-                        depends.append(parts[1])
                 
         elif filetype=="mdl":
             depends.append(filebase+".dx80.vtx")
