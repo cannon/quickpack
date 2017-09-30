@@ -9,7 +9,7 @@ import zipfile
 import shutil
 
 #vmt parameters that reference a vtf texture (all $...2 parameters work as well)
-vtf_keys = set(['$basetexture','$detail','$blendmodulatetexture','$bumpmap','$normalmap','$parallaxmap','$heightmap','$selfillummask','$lightwarptexture','$envmap','$displacementmap','$reflecttexture','$refracttexture','$refracttinttexture','$dudvmap'])
+vtf_keys = set(['$basetexture','$detail','$blendmodulatetexture','$bumpmap','$normalmap','$parallaxmap','$heightmap','$selfillummask','$lightwarptexture','$envmap','$envmapmask','$displacementmap','$reflecttexture','$refracttexture','$refracttinttexture','$dudvmap'])
 vmt_keys = set(['$bottommaterial','$underwateroverlay'])
 
 #dictionary mdlfile->set(skins) so we don't pack unused skins
@@ -25,7 +25,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.37 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.38 by Jackson Cannon - https://github.com/cannon/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
