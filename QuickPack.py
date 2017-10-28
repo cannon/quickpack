@@ -25,7 +25,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.4 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.41 by Jackson Cannon - https://github.com/cannon/quickpack")
 
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
@@ -227,7 +227,12 @@ def check_file(filename):
             print("    Large file: "+filename+" ("+str(round(size/1000000.0,1))+" MB)")
         if filetype=="vmt":
             file = open(filename,'r')
-            content = shlex.split(file.read().lower())
+            content = file.read().lower().strip()
+            try:
+                content = shlex.split(content)
+            except ValueError as e:
+                print("    ERROR in file: "+filename+" ("+str(e)+")")
+                return
             while len(content) >= 2:
                 key = content.pop(0)
                 if key.replace("2","") in vtf_keys:
