@@ -232,7 +232,7 @@ def check_file(filename):
                 content = shlex.split(content)
             except ValueError as e:
                 print("    ERROR in file: "+filename+" ("+str(e)+")")
-                return
+                return depends,deletethis 
             while len(content) >= 2:
                 key = content.pop(0)
                 if key.replace("2","") in vtf_keys:
