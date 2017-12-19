@@ -25,8 +25,12 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.41 by Jackson Cannon - https://github.com/cannon/quickpack")
-
+    print("\nQuickPack v1.42 by Jackson Cannon - https://github.com/cannon/quickpack")
+    
+    if sys.version_info[0] != 2:
+        print("Please run this with Python 2.7")
+        sys.exit()
+        
     if len(sys.argv) < 2:
         print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
         sys.exit()
