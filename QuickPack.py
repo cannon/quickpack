@@ -25,7 +25,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.42 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.43 by Jackson Cannon - https://github.com/cannon/quickpack")
     
     if sys.version_info[0] != 2:
         print("Please run this with Python 2.7")
@@ -40,7 +40,7 @@ def main():
         print("File does not exist: "+abspath)
         sys.exit()
 
-    pathparts = sys.argv[1].replace("/","\\").split("\\")
+    pathparts = abspath.replace("/","\\").split("\\")
     
     if not pathparts[-1].lower().endswith(".bsp"):
         print("Not a BSP file: "+abspath)
@@ -110,7 +110,7 @@ def main():
     for f in unpack_files:
         dependencies[sanitize_filename("maps/quickpacktemp/"+f)]=False
     
-    bsp_file = open(sys.argv[1],'rb')
+    bsp_file = open(abspath,'rb')
 
     read_texture_lump(bsp_file)
     read_staticprop_lump(bsp_file)
@@ -159,7 +159,7 @@ def main():
 
     os.chdir("../bin")
 
-    print("\nWriting to "+sys.argv[1]+"...")
+    print("\nWriting to "+abspath+"...")
 
     delete_file("quickpack.txt")
 
