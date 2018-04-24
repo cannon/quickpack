@@ -25,7 +25,7 @@ dependencies = {}
 dontpack = set()
 
 def main():
-    print("\nQuickPack v1.43 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.44 by Jackson Cannon - https://github.com/cannon/quickpack")
     
     if sys.version_info[0] != 2:
         print("Please run this with Python 2.7")
@@ -265,7 +265,7 @@ def check_file(filename):
 
             used_materials = set()
 
-            if filename in all_model_skins:
+            if (filename in all_model_skins) or (filename not in model_skins):
                 used_materials=set([x for x in range(skinreference_count)])
             else:
                 file.seek(skinreference_index)
