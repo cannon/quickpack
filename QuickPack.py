@@ -30,7 +30,7 @@ hl2_bspzip_target = '"..\\..\\Half-Life 2\\bin\\bspzip.exe"'
 
 
 def main():
-    print("\nQuickPack v1.51 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.52 by Jackson Cannon - https://github.com/cannon/quickpack")
 
     if sys.version_info[0] != 3:
         print("Please run this with Python 3")
@@ -466,7 +466,7 @@ def read_entity_lump(bsp_file):
                 add_mdl_file(v, skin)
 
             # env_sprite uses "model" as the key for its material
-            if k == 'texture' or k == 'material' or k == 'detailmaterial' or k == 'model':
+            if k == 'texture' or k == 'material' or k == 'detailmaterial' or k == 'model' or k == 'ropematerial':
                 dependencies[vmt_filename(v)] = False
 
             if k == 'skyname':
