@@ -9,7 +9,7 @@ import zipfile
 import shutil
 
 # vmt parameters that reference a vtf texture (all $...2 parameters work as well)
-vtf_keys = set(['$basetexture', '$detail', '$blendmodulatetexture', '$bumpmap', '$normalmap', '$parallaxmap', '$heightmap', '$selfillummask',
+vtf_keys = set(['$texture', '$basetexture', '$detail', '$blendmodulatetexture', '$bumpmap', '$normalmap', '$parallaxmap', '$heightmap', '$selfillummask',
                 '$lightwarptexture', '$envmap', '$envmapmask', '$displacementmap', '$reflecttexture', '$refracttexture', '$refracttinttexture',
                 '$dudvmap', '$bumpmask', '$emissiveblendtexture', '$emissiveblendbasetexture', '$emissiveblendflowtexture'])
 vmt_keys = set(['$bottommaterial', '$underwateroverlay'])
@@ -31,7 +31,7 @@ hl2_bspzip_target = '"..\\..\\Half-Life 2\\bin\\bspzip.exe"'
 
 
 def main():
-    print("\nQuickPack v1.53 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.54 by Jackson Cannon - https://github.com/cannon/quickpack")
 
     if sys.version_info[0] != 3:
         print("Please run this with Python 3")
@@ -231,13 +231,16 @@ def delete_dir(f):
 
 
 def vtf_filename(file):
-    return "materials/"+sanitize_filename(file)+".vtf"
+    file = "materials/" + sanitize_filename(file)
+    if not file.endswith(".vtf"):
+        file = file + ".vtf"
+    return file
 
 
 def vmt_filename(file):
-    file = "materials/"+sanitize_filename(file)
+    file = "materials/" + sanitize_filename(file)
     if not file.endswith(".vmt"):
-        file = file+".vmt"
+        file = file + ".vmt"
     return file
 
 
