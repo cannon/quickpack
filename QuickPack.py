@@ -1,3 +1,4 @@
+import argparse
 import struct
 import re
 import os
@@ -9,9 +10,11 @@ import zipfile
 import shutil
 
 # vmt parameters that reference a vtf texture (all $...2 parameters work as well)
-vtf_keys = set(['$texture', '$basetexture', '$detail', '$blendmodulatetexture', '$bumpmap', '$normalmap', '$parallaxmap', '$heightmap', '$selfillummask',
-                '$lightwarptexture', '$envmap', '$envmapmask', '$displacementmap', '$reflecttexture', '$refracttexture', '$refracttinttexture',
-                '$dudvmap', '$bumpmask', '$emissiveblendtexture', '$emissiveblendbasetexture', '$emissiveblendflowtexture'])
+vtf_keys = set(['$texture', '$basetexture', '$detail', '$blendmodulatetexture', '$bumpmap',
+                '$normalmap', '$parallaxmap', '$heightmap', '$selfillummask', '$lightwarptexture',
+                '$envmap', '$envmapmask', '$displacementmap', '$reflecttexture', '$refracttexture',
+                '$refracttinttexture', '$dudvmap', '$bumpmask', '$emissiveblendtexture',
+                '$emissiveblendbasetexture', '$emissiveblendflowtexture'])
 vmt_keys = set(['$bottommaterial', '$underwateroverlay'])
 
 # dictionary mdlfile->set(skins) so we don't pack unused skins
@@ -23,25 +26,40 @@ all_model_skins = set()
 # main file list (filename->boolean have we checked it for subdependencies)
 dependencies = {}
 
-# exclusion list (from nopack.txt)
-dontpack = set()
+# exclusion list of compiled regexes (from nopack.txt)
+dontpack = []
 
 game_bspzip_target = '..\\bin\\bspzip.exe'
 hl2_bspzip_target = '"..\\..\\Half-Life 2\\bin\\bspzip.exe"'
 
+# Where to look for files
+mounts = []
+
+# relative path to absolute path
+file_location = {}
+
+# tuples of (filename, size)
+file_sizes = []
+
 
 def main():
-    print("\nQuickPack v1.54 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.60 by Jackson Cannon - https://github.com/cannon/quickpack")
+
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('mapfile', help='Path to map file')
+    parser.add_argument('--hl2', action="store_true",
+                        help='Use Half-Life 2 bspzip.exe')
+    parser.add_argument('--minify-vmt', action="store_true",
+                        help='Remove comments/whitespace/%keywords from VMTs')
+    parser.add_argument('--warn-filesize', type=int, default=1000,
+                        help='Files at least this many KB will be printed')
+    args = parser.parse_args()
 
     if sys.version_info[0] != 3:
         print("Please run this with Python 3")
         sys.exit()
 
-    if len(sys.argv) < 2:
-        print("Usage: "+sys.argv[0]+" path/to/filename.bsp")
-        sys.exit()
-
-    abspath = os.path.abspath(sys.argv[1])
+    abspath = os.path.abspath(args.mapfile)
     if not os.path.isfile(abspath):
         print("File does not exist: "+abspath)
         sys.exit()
@@ -55,7 +73,7 @@ def main():
     if not os.path.isfile(bspzip_target):
         print("\nbspzip.exe not found for this game. Trying HL2 instead.")
         bspzip_target = hl2_bspzip_target
-    elif len(sys.argv) > 2 and sys.argv[2] == "-hl2":
+    elif args.hl2:
         bspzip_target = hl2_bspzip_target
     elif pathparts[-3] == "garrysmod":
         print("\nWarning: bspzip.exe for this game might not work. Try passing -hl2 if you get an error.")
@@ -73,6 +91,19 @@ def main():
         sys.exit()
 
     gameroot = os.getcwd()
+
+    mounts.append(gameroot)
+    mountfile = gameroot+"/cfg/mount.cfg"
+    if os.path.isfile(mountfile):
+        file = open(mountfile, 'r')
+        content = file.read().lower().strip()
+        content = shlex_split_comments(content)
+        if content[0] == "mountcfg" and content[1] == "{" and content[-1] == "}":
+            mounts.extend(content[3::2])
+            print("Looking in mounts: "+str(mounts))
+        else:
+            print("Warning: malformed mount.cfg")
+
     mapfilepath = '/'.join(pathparts[-2:]).lower()
     mapfilepath_cmd = cmd_path(gameroot+"/"+mapfilepath)
     mapname = pathparts[-1].lower().replace(".bsp", "")
@@ -106,7 +137,7 @@ def main():
         textfilecontent = textfile.readlines()
         textfile.close()
         for i in textfilecontent:
-            dontpack.add(sanitize_filename(i))
+            dontpack.append(re.compile("^"+i.strip()+"$"))
 
     print("\nReading "+mapname+".bsp...")
 
@@ -144,8 +175,9 @@ def main():
     while moreitems:
         moreitems = False
         for file, checked in list(dependencies.items()):
-            if file in dontpack:
+            if any(r.match(file) is not None for r in dontpack):
                 del dependencies[file]
+                print("Skipping "+file)
                 continue
             if checked == False:
                 newitems, deletethis = check_file(file)
@@ -175,14 +207,35 @@ def main():
     for k, v in filetypelist.items():
         print("    "+str(v)+" "+str(k)+" files.")
 
+    file_sizes.sort(key=lambda x: x[1], reverse=True)
+    first = True
+    for file, size in file_sizes:
+        size_kb = size//1000
+        if size_kb >= args.warn_filesize:
+            if first:
+                print("\nLarge files:")
+                first = False
+            print("    {} is {} KB".format(file, size_kb))
+    if not first:
+        print("")
+
     print("\nWriting to "+abspath+"...")
+
+    if args.minify_vmt:
+        delete_dir("quickpackmaterials")
+        os.mkdir("quickpackmaterials")
 
     delete_file("quickpack.txt")
 
     outfile = open("quickpack.txt", "w")
     for file, checked in dependencies.items():
         outfile.write(file+'\n')
-        outfile.write(gameroot+"\\"+(file.replace("/", "\\"))+'\n')
+        if file.endswith(".vmt") and args.minify_vmt:
+            minify_vmt(file)
+            outfile.write(
+                (gameroot+"\\quickpack"+file).replace("/", "\\")+'\n')
+        else:
+            outfile.write(file_location[file].replace("/", "\\")+'\n')
 
     outfile.close()
 
@@ -190,6 +243,8 @@ def main():
               " quickpack.txt "+mapfilepath_cmd + " > nul 2>&1")
 
     delete_file("quickpack.txt")
+    if args.minify_vmt:
+        delete_dir("quickpackmaterials")
 
     print("Done!")
 
@@ -198,8 +253,15 @@ def debug_bytes(bytes):
     import binascii
     bytes = binascii.hexlify(bytes)
     split = 2*12
-    print(' '.join(bytes[i:i+split] for i in xrange(0, len(bytes), split)))
+    print(' '.join(bytes[i:i+split] for i in range(0, len(bytes), split)))
     return
+
+
+def shlex_split_comments(txt):
+    nxt = ""
+    for ln in txt.split("\n"):
+        nxt += ln.split("//")[0]+" "
+    return shlex.split(nxt)
 
 
 def regex_find(regex, data):
@@ -248,26 +310,51 @@ def sanitize_filename(file):
     return file.lower().replace("\\", "/").strip().strip("/")
 
 
+def minify_vmt(filename):
+    file = open(file_location[filename], 'r')
+    content = file.read().strip()
+    file.close()
+
+    nxt = ""
+    for ln in content.split("\n"):
+        words = ln.lower().split("//")[0].strip().split()
+        words = [word[1:-1] if word[0] == '"' and word[-1]
+                 == '"' else word for word in words]
+        if len(words) > 0 and words[0].lower() in ["%keywords", "%tooltexture"]:
+            continue
+        ln = " ".join(words)
+        if ln != "":
+            nxt += ln + "\n"
+
+    outfile = "quickpack"+filename
+    os.makedirs("/".join(outfile.split("/")[:-1]), exist_ok=True)
+    with open(outfile, "w") as outf:
+        outf.write(nxt)
+
+
 def check_file(filename):
     filebase = filename.split(".", 1)[0]
     filetype = filename.split(".", 1)[-1]
     depends = []
     deletethis = False
 
+    for m in mounts:
+        absfile = m+"/"+filename
+        if os.path.isfile(absfile):
+            file_location[filename] = absfile
+
     # if file doesn't exist, we assume it's in a vpk so no need to pack
-    if os.path.isfile(filename):
-        size = os.path.getsize(filename)
-        if size >= 1000000:
-            print("    Large file: "+filename +
-                  " ("+str(round(size/1000000.0, 1))+" MB)")
+    if filename in file_location:
+        absfile = file_location[filename]
+        file_sizes.append((filename, os.path.getsize(absfile)))
         if filetype == "vmt":
-            file = open(filename, 'r')
+            file = open(absfile, 'r')
             content = file.read().lower().strip()
             try:
-                content = shlex.split(content)
+                content = shlex_split_comments(content)
             except ValueError as e:
-                print("    ERROR in file: "+filename+" ("+str(e)+")")
-                return depends, deletethis
+                print("Packing failed: ERROR in file: "+absfile+" ("+str(e)+")")
+                sys.exit()
             while len(content) >= 2:
                 key = content.pop(0)
                 if key.replace("2", "") in vtf_keys:
@@ -284,7 +371,7 @@ def check_file(filename):
             depends.append(filebase+".phy")
             depends.append(filebase+".sw.vtx")
             depends.append(filebase+".vvd")
-            file = open(filename, 'rb')
+            file = open(absfile, 'rb')
             file.seek(204)
             texture_count, = struct.unpack('<i', file.read(4))
             texture_offset, = struct.unpack('<i', file.read(4))
