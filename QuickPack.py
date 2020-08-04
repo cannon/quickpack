@@ -43,7 +43,7 @@ file_sizes = []
 
 
 def main():
-    print("\nQuickPack v1.60 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.61 by Jackson Cannon - https://github.com/cannon/quickpack")
 
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('mapfile', help='Path to map file')
@@ -310,6 +310,9 @@ def sanitize_filename(file):
     return file.lower().replace("\\", "/").strip().strip("/")
 
 
+unquotable = re.compile("^[a-z0-9$.]+$")
+
+
 def minify_vmt(filename):
     file = open(file_location[filename], 'r')
     content = file.read().strip()
@@ -319,7 +322,7 @@ def minify_vmt(filename):
     for ln in content.split("\n"):
         words = ln.lower().split("//")[0].strip().split()
         words = [word[1:-1] if word[0] == '"' and word[-1]
-                 == '"' else word for word in words]
+                 == '"' and unquotable.match(word[1:-1]) else word for word in words]
         if len(words) > 0 and words[0].lower() in ["%keywords", "%tooltexture"]:
             continue
         ln = " ".join(words)
