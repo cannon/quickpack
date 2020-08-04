@@ -15,6 +15,6 @@ Your map must be located in the (game root)/maps folder. This program only runs 
 * To force the program not to pack specific files and their dependencies, make a `mapname.nopack.txt` file in the maps folder. **You can now use regular expressions.**. For example, to prevent all materials in the "materials/external/" directory from packing, add a line to the file containing `materials/external/.*`
 
 **New feature: Minify VMTs:**
-Removes comments whitespace, and other junk from vmts to clean up and save a tiny bit of space. Pass `--minify-vmt`.
+Removes comments whitespace, and other junk from vmts to clean up and save a tiny bit of space. Pass `--minify-vmt`. This feature is in beta, so check over the result before shipping anything.
 
 If you experience any problems, or would like features to be added, please start an issue!
