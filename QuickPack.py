@@ -14,7 +14,7 @@ vtf_keys = set(['$texture', '$basetexture', '$detail', '$blendmodulatetexture', 
                 '$normalmap', '$parallaxmap', '$heightmap', '$selfillummask', '$lightwarptexture',
                 '$envmap', '$envmapmask', '$displacementmap', '$reflecttexture', '$refracttexture',
                 '$refracttinttexture', '$dudvmap', '$bumpmask', '$emissiveblendtexture',
-                '$emissiveblendbasetexture', '$emissiveblendflowtexture'])
+                '$emissiveblendbasetexture', '$emissiveblendflowtexture', '$phongexponenttexture'])
 vmt_keys = set(['$bottommaterial', '$underwateroverlay'])
 
 # dictionary mdlfile->set(skins) so we don't pack unused skins
@@ -43,7 +43,7 @@ file_sizes = []
 
 
 def main():
-    print("\nQuickPack v1.61 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.62 by Jackson Cannon - https://github.com/cannon/quickpack")
 
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('mapfile', help='Path to map file')
