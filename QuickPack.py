@@ -43,7 +43,7 @@ file_sizes = []
 
 
 def main():
-    print("\nQuickPack v1.62 by Jackson Cannon - https://github.com/cannon/quickpack")
+    print("\nQuickPack v1.63 by Jackson Cannon - https://github.com/cannon/quickpack")
 
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('mapfile', help='Path to map file')
@@ -429,6 +429,9 @@ def check_file(filename):
                     if skin in skin_to_textures:
                         for i in skin_to_textures[skin]:
                             used_materials.add(i)
+                    else:
+                        print("Invalid skin {} in {}!".format(skin, filename))
+                        sys.exit()
 
             textureoffsets = []
             file.seek(texture_offset)
